@@ -45,6 +45,9 @@
     background: var(--bg-soft); padding: 2px 6px; border-radius: 3px;
     font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 14px; color: var(--red);
   }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(26, 107, 74, 0.3); }
+  a:hover { border-bottom-color: var(--accent); }
+  td a { font-weight: 600; }
   table {
     width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 15px;
   }
@@ -253,15 +256,73 @@
   <p><strong>关键判断：</strong>如果遇到的是第二、三种，换域名、换短链、买新域名这些动作全是白费力气。应先确认实际现象，再决定投入方向。</p>
 </div>
 
+<h2>六、官方依据文件</h2>
+<p>上文所述的判断依据，可追溯到以下官方文件。排查具体问题时，建议直接查阅原文。</p>
+
+<h3>6.1 微信平台规则 —— 域名管控的依据</h3>
+
+<table>
+  <thead>
+    <tr><th>文件</th><th>版本 / 时间</th><th>与本主题相关的关键内容</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://weixin.qq.com/cgi-bin/readtemplate?t=weixin_external_links_content_management_specification" target="_blank" rel="noopener">《微信外部链接内容管理规范》</a></td>
+      <td>2021-09-17 修订</td>
+      <td><strong>域名管控最直接的依据。</strong>明确违规处理措施包括「停止对相关域名或 IP 地址进行访问」「阻止相关链接直接打开」「在朋友圈对相关内容做不可见处理」；列举诱导分享、诱导关注、诱导或误导下载跳转等违规类型；规定情节恶劣的可永久封禁域名、IP 地址或分享接口；小程序快照页等参照本规范管理</td>
+    </tr>
+    <tr>
+      <td><a href="https://weixin.qq.com/agreement/personal_account" target="_blank" rel="noopener">《微信个人账号使用规范》</a></td>
+      <td>2024-11-22 更新</td>
+      <td>账号层面的处罚依据。规定阶梯式处罚：删除内容、警告、限制或禁止使用部分或全部功能，直至封号</td>
+    </tr>
+    <tr>
+      <td><a href="https://weixin.qq.com/cgi-bin/readtemplate?lang=zh_CN&amp;t=weixin_agreement&amp;s=default" target="_blank" rel="noopener">《腾讯微信软件许可及服务协议》</a></td>
+      <td>现行版本</td>
+      <td>平台基础协议。《微信个人账号使用规范》为其不可分割的组成部分，一并生效</td>
+    </tr>
+    <tr>
+      <td><a href="https://weixin110.qq.com/" target="_blank" rel="noopener">微信安全中心</a></td>
+      <td>持续更新</td>
+      <td>恶意域名数据库与治理公告的官方发布渠道，同时是域名拦截的申诉入口</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>6.2 监管文件 —— 交易风控的依据</h3>
+
+<table>
+  <thead>
+    <tr><th>文件</th><th>文号</th><th>与本主题相关的关键内容</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://www.pbc.gov.cn/zhengwugongkai/4081330/4406346/4693545/4774331/index.html" target="_blank" rel="noopener">《中国人民银行关于加强支付受理终端及相关业务管理的通知》</a></td>
+      <td>银发〔2021〕259号</td>
+      <td><strong>远程收款风控最直接的监管依据。</strong>要求条码支付收款服务机构采取有效措施，禁止个人静态收款条码被用于远程非面对面收款；确有必要远程收款的，应对收款人实行白名单管理，并审慎确定准入条件、规模、有效期、使用次数和交易限额；通过截屏、下载等方式保存的个人动态收款条码参照执行。2022 年 3 月 1 日起施行</td>
+    </tr>
+    <tr>
+      <td><a href="https://www.gov.cn/zhengce/zhengceku/202312/content_6920725.htm" target="_blank" rel="noopener">《非银行支付机构监督管理条例》</a></td>
+      <td>国令第 768 号</td>
+      <td>支付业务须经中国人民银行批准并取得支付业务许可证，未经批准不得从事或变相从事支付业务。2024 年 5 月 1 日起施行</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="box">
+  <p><strong>关于具体阈值的说明：</strong>本文所涉的具体数值（风险关键词数量、举报触发量级、流量异常阈值等）<strong>官方文件并未公开披露</strong>，均来自第三方安全厂商的观测与分析，仅供参考，不宜作为精确判断标准。</p>
+  <p>官方文件中明确的是<strong>违规类型与处理措施</strong>，而非触发阈值——也就是说，可以据此判断「什么会被处理」，但无法据此推算「到什么程度会被处理」。</p>
+</div>
+
 <footer>
-  <p><strong>参考来源</strong></p>
+  <p><strong>第三方分析来源（供参考）</strong></p>
   <ol>
     <li><a href="https://developer.aliyun.com/article/1724512">微信域名拦截 类型解析+风控原因+申诉指南 - 阿里云开发者社区</a></li>
     <li><a href="https://developer.baidu.com/article/detail.html?id=4627478">微信域名拦截检测全攻略：从原理到实践的深度解析 - 百度开发者中心</a></li>
     <li><a href="https://www.boce.com/news/5484.html">微信拦截域名原理是什么 - BOCE</a></li>
     <li><a href="https://www.163.com/dy/article/KJV9QFQS05341Q4V.html">微信安全中心：针对恶意链接的治理公告</a></li>
-    <li><a href="https://www.shuhukeji.com/index.php?m=content&amp;a=index&amp;classid=8&amp;id=2740">立刷官网：微信收款码截图发给异地客户总被风控？深层原因一次性讲透</a></li>
-    <li><a href="https://blog.csdn.net/jidaopay/article/details/149325274">最容易触发支付系统风控的10种情况 - CSDN</a></li>
+    <li><a href="https://www.shuhukeji.com/index.php?m=content&amp;a=index&amp;classid=8&amp;id=2740">微信收款码截图发给异地客户总被风控？深层原因一次性讲透</a></li>
+    <li><a href="https://blog.csdn.net/jidaopay/article/details/149325274">最容易触发支付系统风控的 10 种情况 - CSDN</a></li>
     <li><a href="https://m.sohu.com/coo/sg/754978122_121894151">一文告诉你如何远程收款降低风控 - 搜狐</a></li>
     <li><a href="http://jiujipos.com/pos/shouyinzhishi2518.html">收款码异地收款会怎么样 - 九合数字收银商服</a></li>
   </ol>
