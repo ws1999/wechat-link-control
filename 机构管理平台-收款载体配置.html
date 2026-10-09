@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>机构管理平台 - 收款单 · 商户管理</title>
+<style>
+  :root{
+    --topbar:#1a2b4d;
+    --primary:#1890ff;
+    --primary-hover:#40a9ff;
+    --primary-light:#e6f4ff;
+    --primary-border:#91caff;
+    --text:rgba(0,0,0,.85);
+    --text-2:rgba(0,0,0,.65);
+    --text-3:rgba(0,0,0,.45);
+    --border:#f0f0f0;
+    --border-2:#d9d9d9;
+    --bg-page:#f0f2f5;
+    --bg-card:#fff;
+    --table-head:#fafafa;
+    --warn-bg:#fffbe6;
+    --warn-border:#ffe58f;
+    --warn-text:#614700;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-size:14px;color:var(--text);background:var(--bg-page);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- 顶栏 ---------- */
+  .topbar{
+    height:56px;background:var(--topbar);display:flex;align-items:center;
+    padding:0 20px 0 16px;position:fixed;top:0;left:0;right:0;z-index:100;
+  }
+  .brand{display:flex;align-items:center;gap:10px;flex:1}
+  .brand-logo{
+    width:26px;height:26px;border-radius:5px;background:#faad14;
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+  }
+  .brand-logo svg{width:16px;height:16px;display:block}
+  .brand-name{color:#fff;font-size:17px;font-weight:500;letter-spacing:.5px}
+  .topbar-right{display:flex;align-items:center;gap:18px}
+  .topbar-icon{width:20px;height:20px;cursor:pointer;opacity:.85;display:flex;align-items:center;justify-content:center}
+  .topbar-icon:hover{opacity:1}
+  .topbar-icon svg{width:17px;height:17px}
+  .topbar-user{display:flex;align-items:center;gap:8px;cursor:pointer}
+  .avatar{
+    width:28px;height:28px;border-radius:50%;background:#4a6fa5;
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+  }
+  .avatar svg{width:16px;height:16px}
+  .topbar-user span{color:#fff;font-size:14px;opacity:.92}
+
+  /* ---------- 布局 ---------- */
+  .layout{display:flex;padding-top:56px;min-height:100vh}
+  .sidebar{
+    width:200px;flex:0 0 200px;background:#fff;border-right:1px solid var(--border);
+    position:fixed;top:56px;bottom:0;left:0;overflow-y:auto;
+  }
+  .menu{padding:8px 0;list-style:none}
+  .menu-item{
+    display:flex;align-items:center;gap:10px;height:44px;padding:0 16px;
+    color:var(--text-2);cursor:pointer;font-size:14px;position:relative;
+  }
+  .menu-item:hover{color:var(--primary)}
+  .menu-item .mi-icon{width:16px;height:16px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+  .menu-item .mi-icon svg{width:15px;height:15px}
+  .menu-item .mi-arrow{margin-left:auto;transition:transform .2s;display:flex;align-items:center}
+  .menu-item .mi-arrow svg{width:11px;height:11px}
+  .menu-item.open .mi-arrow{transform:rotate(180deg)}
+  .menu-group{list-style:none}
+  .menu-sub{
+    display:flex;align-items:center;gap:10px;height:42px;padding:0 16px 0 42px;
+    color:var(--text-2);cursor:pointer;font-size:14px;position:relative;
+  }
+  .menu-sub:hover{color:var(--primary)}
+  .menu-sub.active{
+    background:var(--primary-light);color:var(--primary);font-weight:500;
+  }
+  .menu-sub.active::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--primary);
+  }
+  .badge-dot{
+    width:6px;height:6px;border-radius:50%;background:var(--primary);
+    position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  }
+
+  /* ---------- 主区 ---------- */
+  .main{margin-left:200px;flex:1;min-width:0;padding:0}
+  .tabbar{
+    display:flex;align-items:center;gap:8px;height:40px;padding:0 20px;
+    background:#fff;border-bottom:1px solid var(--border);
+  }
+  .tab{
+    display:flex;align-items:center;gap:6px;height:40px;padding:0 4px;
+    color:var(--primary);font-size:14px;position:relative;
+  }
+  .tab::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--primary)}
+  .tab .tab-close{color:var(--text-3);font-size:13px;cursor:pointer}
+  .tab .tab-close:hover{color:var(--text-2)}
+
+  .content{padding:16px 20px 40px}
+  .card{background:var(--bg-card);border-radius:4px;padding:20px 24px 24px}
+  .card + .card{margin-top:16px}
+
+  /* ---------- 筛选区 ---------- */
+  .filters{display:flex;flex-wrap:wrap;gap:20px 24px;align-items:flex-start}
+  .field{display:flex;flex-direction:column;gap:8px}
+  .field-label{font-size:14px;color:var(--text-2);line-height:1}
+  .field-row{display:flex;align-items:center;gap:8px}
+  .ctrl{
+    height:32px;border:1px solid var(--border-2);border-radius:4px;background:#fff;
+    padding:0 11px;font-size:14px;color:var(--text);font-family:inherit;outline:none;
+  }
+  .ctrl:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(24,144,255,.1)}
+  .ctrl::placeholder{color:rgba(0,0,0,.25)}
+  .ctrl-date{width:150px;display:flex;align-items:center;gap:6px;color:rgba(0,0,0,.25);cursor:pointer}
+  .ctrl-date.filled{color:var(--text)}
+  .ctrl-date svg{width:14px;height:14px;flex:0 0 auto;color:var(--text-3)}
+  .ctrl-select{
+    width:240px;appearance:none;cursor:pointer;
+    background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%23bfbfbf' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 10px center;background-size:11px;
+    padding-right:28px;
+  }
+  .ctrl-text{width:240px}
+  .ctrl-sm{width:120px}
+  .sep{color:var(--text-2);font-size:14px}
+  .checkline{display:flex;align-items:center;gap:16px;height:32px}
+  .check{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;color:var(--text)}
+  .check input{width:14px;height:14px;accent-color:var(--primary);cursor:pointer}
+
+  /* ---------- 按钮 ---------- */
+  .btn{
+    height:32px;padding:0 15px;border-radius:4px;font-size:14px;font-family:inherit;
+    cursor:pointer;border:1px solid var(--border-2);background:#fff;color:var(--text);
+    display:inline-flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap;
+  }
+  .btn:hover{border-color:var(--primary);color:var(--primary)}
+  .btn svg{width:13px;height:13px}
+  .btn-primary{background:var(--primary);border-color:var(--primary);color:#fff}
+  .btn-primary:hover{background:var(--primary-hover);border-color:var(--primary-hover);color:#fff}
+  .btn[disabled]{opacity:.4;cursor:not-allowed}
+  .btn[disabled]:hover{border-color:var(--border-2);color:var(--text)}
+  .btn-primary[disabled]:hover{background:var(--primary);border-color:var(--primary);color:#fff}
+
+  .toolbar{
+    display:flex;align-items:center;gap:12px;margin-top:20px;
+    padding-top:20px;border-top:1px solid var(--border);
+  }
+  .toolbar-right{margin-left:auto;display:flex;gap:12px}
+
+  /* ---------- 表格 ---------- */
+  .table-title{font-size:15px;font-weight:500;margin:24px 0 14px;color:var(--text)}
+  .table-wrap{border:1px solid var(--border);border-radius:4px;overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:1280px;font-size:14px}
+  thead th{
+    background:var(--table-head);color:var(--text);font-weight:500;text-align:left;
+    padding:13px 16px;border-bottom:1px solid var(--border);white-space:nowrap;
+  }
+  tbody td{
+    padding:14px 16px;border-bottom:1px solid var(--border);color:var(--text);
+    vertical-align:middle;
+  }
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#fafafa}
+  .cell-nowrap{white-space:nowrap}
+  .cell-name{min-width:180px}
+  .cell-actions{white-space:nowrap}
+  .link{color:var(--primary);cursor:pointer;font-size:14px}
+  .link:hover{color:var(--primary-hover)}
+  .link.danger{color:var(--primary)}
+  .act-sep{color:var(--border-2);margin:0 10px}
+
+  /* 载体标签 */
+  .tag{
+    display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;
+    border-radius:3px;font-size:12px;line-height:1;border:1px solid transparent;white-space:nowrap;
+  }
+  .tag-h5{background:#fafafa;color:#595959;border-color:#d9d9d9}
+  .tag-mp{background:var(--primary-light);color:#0958d9;border-color:var(--primary-border)}
+  .tag-dot{width:5px;height:5px;border-radius:50%}
+  .tag-h5 .tag-dot{background:#bfbfbf}
+  .tag-mp .tag-dot{background:var(--primary)}
+
+  /* 状态 */
+  .status{display:inline-flex;align-items:center;gap:6px}
+  .status-dot{width:6px;height:6px;border-radius:50%;background:#52c41a}
+  .status-dot.off{background:#bfbfbf}
+
+  /* 分页 */
+  .pager{
+    display:flex;align-items:center;justify-content:flex-end;gap:8px;
+    margin-top:18px;font-size:14px;color:var(--text-2);
+  }
+  .pager-btn{
+    min-width:32px;height:32px;border:1px solid var(--border-2);border-radius:4px;background:#fff;
+    display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;
+    color:var(--text);padding:0 8px;
+  }
+  .pager-btn:hover{border-color:var(--primary);color:var(--primary)}
+  .pager-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+  .pager-btn[disabled]{opacity:.4;cursor:not-allowed}
+
+  /* ---------- 弹窗 ---------- */
+  .mask{
+    position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;
+    display:none;align-items:flex-start;justify-content:center;padding-top:88px;
+  }
+  .mask.show{display:flex}
+  .modal{
+    background:#fff;border-radius:6px;width:560px;max-width:calc(100vw - 32px);
+    box-shadow:0 6px 24px rgba(0,0,0,.15);max-height:calc(100vh - 140px);display:flex;flex-direction:column;
+  }
+  .modal-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 22px;border-bottom:1px solid var(--border);flex:0 0 auto;
+  }
+  .modal-title{font-size:16px;font-weight:500;color:var(--text)}
+  .modal-close{
+    width:24px;height:24px;border:none;background:none;cursor:pointer;color:var(--text-3);
+    display:flex;align-items:center;justify-content:center;border-radius:4px;
+  }
+  .modal-close:hover{background:#f5f5f5;color:var(--text-2)}
+  .modal-close svg{width:14px;height:14px}
+  .modal-body{padding:20px 22px;overflow-y:auto;flex:1 1 auto}
+  .modal-foot{
+    display:flex;justify-content:flex-end;gap:10px;padding:14px 22px;
+    border-top:1px solid var(--border);flex:0 0 auto;
+  }
+
+  .info-grid{
+    display:grid;grid-template-columns:auto 1fr;gap:10px 16px;
+    padding:14px 16px;background:#fafafa;border-radius:4px;margin-bottom:20px;
+  }
+  .info-grid dt{color:var(--text-3);font-size:13px;white-space:nowrap}
+  .info-grid dd{color:var(--text);font-size:13px;word-break:break-all}
+
+  .form-item{margin-bottom:20px}
+  .form-item:last-child{margin-bottom:0}
+  .form-label{
+    display:block;font-size:14px;color:var(--text);margin-bottom:10px;
+  }
+  .form-label .req{color:#ff4d4f;margin-right:4px}
+  .form-label .opt{color:var(--text-3);font-size:13px;margin-left:6px;font-weight:400}
+
+  .radio-group{display:flex;flex-direction:column;gap:10px}
+  .option{
+    display:flex;align-items:flex-start;gap:10px;padding:13px 14px;
+    border:1px solid var(--border-2);border-radius:4px;cursor:pointer;transition:all .15s;
+  }
+  .option:hover{border-color:var(--primary)}
+  .option.checked{border-color:var(--primary);background:var(--primary-light)}
+  .option.disabled{cursor:not-allowed;background:#fafafa;border-color:var(--border);opacity:.6}
+  .option.disabled:hover{border-color:var(--border)}
+  .option input{margin-top:2px;width:14px;height:14px;accent-color:var(--primary);cursor:pointer;flex:0 0 auto}
+  .option.disabled input{cursor:not-allowed}
+  .option-body{flex:1;min-width:0}
+  .option-title{font-size:14px;color:var(--text);display:flex;align-items:center;gap:8px;margin-bottom:4px}
+  .option-desc{font-size:12.5px;color:var(--text-3);line-height:1.6}
+  .opt-tag{
+    font-size:11px;padding:1px 6px;border-radius:3px;line-height:16px;
+    background:#f5f5f5;color:var(--text-2);font-weight:400;
+  }
+  .opt-tag.cur{background:#e6f4ff;color:#0958d9}
+  .opt-lock{
+    font-size:11px;padding:1px 6px;border-radius:3px;line-height:16px;
+    background:#fff1f0;color:#cf1322;font-weight:400;display:none;
+  }
+  .option.disabled .opt-lock{display:inline-block}
+
+  /* 权限提示 */
+  .perm-note{
+    display:flex;align-items:flex-start;gap:6px;font-size:12.5px;color:var(--text-3);
+    line-height:1.6;margin:-8px 0 20px;padding-left:2px;
+  }
+  .perm-note svg{width:13px;height:13px;flex:0 0 auto;color:var(--text-3);margin-top:3px}
+
+  .textarea{
+    width:100%;min-height:64px;border:1px solid var(--border-2);border-radius:4px;
+    padding:8px 11px;font-size:14px;font-family:inherit;color:var(--text);
+    resize:vertical;outline:none;line-height:1.6;
+  }
+  .textarea:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(24,144,255,.1)}
+  .textarea::placeholder{color:rgba(0,0,0,.25)}
+
+  .alert{
+    display:flex;gap:10px;padding:12px 14px;border-radius:4px;font-size:13px;line-height:1.75;
+    background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn-text);
+  }
+  .alert svg{width:15px;height:15px;flex:0 0 auto;margin-top:3px;color:#faad14}
+  .alert b{font-weight:600}
+  .alert ul{margin:6px 0 0 2px;padding-left:14px}
+  .alert li{margin-bottom:3px}
+  .alert li:last-child{margin-bottom:0}
+
+  /* toast */
+  .toast{
+    position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-12px);
+    background:#fff;border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.15);
+    padding:11px 18px;font-size:14px;color:var(--text);z-index:2000;
+    display:flex;align-items:center;gap:9px;opacity:0;pointer-events:none;transition:all .22s;
+    border-left:3px solid #52c41a;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast svg{width:15px;height:15px;color:#52c41a;flex:0 0 auto}
+</style>
+</head>
+<body>
+
+<!-- ========== 顶栏 ========== -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-logo">
+      <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1" fill="#fff"/><rect x="13" y="3" width="8" height="8" rx="1" fill="#fff" opacity=".75"/><rect x="3" y="13" width="8" height="8" rx="1" fill="#fff" opacity=".75"/><rect x="13" y="13" width="8" height="8" rx="1" fill="#fff"/></svg>
+    </div>
+    <div class="brand-name">机构管理平台</div>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-icon" title="下载">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </div>
+    <div class="topbar-user">
+      <div class="avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <span>服务有限公司测试修改名称</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- ========== 侧边栏 ========== -->
+  <aside class="sidebar">
+    <ul class="menu">
+      <li class="menu-item">
+        <span class="mi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+        <span>首页</span>
+      </li>
+
+      <li class="menu-item open">
+        <span class="mi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span>
+        <span>场景缴费</span>
+        <span class="mi-arrow"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 4.5 6 8 9.5 4.5"/></svg></span>
+      </li>
+
+      <li>
+        <ul class="menu-group">
+          <li class="menu-sub active">
+            <span class="mi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></span>
+            <span>商户管理</span>
+            <span class="badge-dot"></span>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- ========== 主内容 ========== -->
+  <main class="main">
+    <div class="tabbar">
+      <div class="tab"><span>商户管理</span><span class="tab-close">✕</span></div>
+    </div>
+
+    <div class="content">
+      <div class="card">
+        <!-- 筛选 -->
+        <div class="filters">
+          <div class="field">
+            <label class="field-label">开通时间：</label>
+            <div class="field-row">
+              <div class="ctrl ctrl-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>开始时间</span></div>
+              <span class="sep">至</span>
+              <div class="ctrl ctrl-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>结束时间</span></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">归属机构：</label>
+            <div class="field-row">
+              <select class="ctrl ctrl-select">
+                <option>服务有限公司测试修改名称</option>
+                <option>全部分支机构</option>
+              </select>
+              <span class="sep">范围：</span>
+              <div class="checkline">
+                <label class="check"><input type="checkbox" checked><span>直属</span></label>
+                <label class="check"><input type="checkbox" checked><span>下级</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">商户编号：</label>
+            <input class="ctrl ctrl-text" placeholder="请输入商户编号">
+          </div>
+
+          <div class="field">
+            <label class="field-label">状态：</label>
+            <select class="ctrl ctrl-select">
+              <option>全部</option>
+              <option>启起</option>
+              <option>停用</option>
+            </select>
+          </div>
+
+          <!-- 新增筛选：收款载体 -->
+          <div class="field">
+            <label class="field-label">收款载体：</label>
+            <select class="ctrl ctrl-select" id="filterCarrier" style="width:200px">
+              <option value="">全部</option>
+              <option value="h5">H5 页面</option>
+              <option value="mp">小程序</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 工具栏 -->
+        <div class="toolbar">
+          <button class="btn btn-primary">新增</button>
+          <button class="btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            导出
+          </button>
+          <div class="toolbar-right">
+            <button class="btn">重置</button>
+            <button class="btn btn-primary">查询</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 表格 -->
+      <div class="card">
+        <div class="table-title" style="margin-top:0">查询结果</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>序号</th>
+                <th>开通日期</th>
+                <th>商户编号</th>
+                <th>商户名称</th>
+                <th>直属机构编号</th>
+                <th>直属机构名称</th>
+                <th>收款载体</th>
+                <th>状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"><!-- JS 渲染 --></tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span id="totalText">共 8 条</span>
+          <button class="pager-btn" disabled>‹</button>
+          <button class="pager-btn active">1</button>
+          <button class="pager-btn" disabled>›</button>
+          <select class="ctrl ctrl-sm" style="height:32px">
+            <option>10 条/页</option>
+            <option>20 条/页</option>
+            <option>50 条/页</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ========== 载体配置弹窗 ========== -->
+<div class="mask" id="mask">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">载体配置</div>
+      <button class="modal-close" id="modalClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <dl class="info-grid" id="infoGrid">
+        <dt>商户名称</dt><dd id="mName">—</dd>
+        <dt>商户编号</dt><dd id="mNo">—</dd>
+        <dt>直属机构</dt><dd id="mOrg">—</dd>
+      </dl>
+
+      <div class="perm-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>仅可配置归属本机构及下级机构的商户，跨机构商户不可操作</span>
+      </div>
+
+      <div class="form-item">
+        <label class="form-label"><span class="req">*</span>收款载体</label>
+        <div class="radio-group" id="radioGroup">
+          <label class="option" data-val="h5">
+            <input type="radio" name="carrier" value="h5">
+            <div class="option-body">
+              <div class="option-title">H5 页面 <span class="opt-tag" data-tag="h5">当前</span><span class="opt-lock">已切换至小程序，不可回退</span></div>
+              <div class="option-desc">生成电子码图片，扫码后在微信内打开 H5 支付页。为系统默认载体。</div>
+            </div>
+          </label>
+          <label class="option" data-val="mp">
+            <input type="radio" name="carrier" value="mp">
+            <div class="option-body">
+              <div class="option-title">小程序 <span class="opt-tag" data-tag="mp">当前</span></div>
+              <div class="option-desc">生成小程序码图片，扫码后直接进入小程序完成支付，不经过 H5 域名。适用于 H5 链接被微信管控的商户。</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-item">
+        <div class="alert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div>
+            <b>切换载体会影响已发出的收款单，请确认后再操作：</b>
+            <ul>
+              <li>切换后，<b>新建</b>的收款单使用新载体</li>
+              <li>已发出的<b>未支付</b>收款单，将在 <b>T+3 天</b>后统一失效；顾客可打开，但点【确认支付】时会提示已失效</li>
+              <li>已支付、退款中的收款单<b>不受影响</b></li>
+              <li>切换后请通知商户，引导其重新发送收款单</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-item">
+        <label class="form-label"><span class="req">*</span>备注<span class="opt">用于记录切换原因，便于后续追溯</span></label>
+        <textarea class="textarea" id="remark" placeholder="例如：商户反馈 H5 收款链接在微信内被管控，无法正常收款"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn" id="btnCancel">取消</button>
+      <button class="btn btn-primary" id="btnConfirm">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- toast -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastText">操作成功</span>
+</div>
+
+<script>
+/* ---------- 数据 ---------- */
+const rows = [
+  { id:1, date:'2026-06-22 11:46:24', no:'399260526889278', name:'dd-260526分32',            orgNo:'26680846', org:'服务有限公司测试修改名称', carrier:'h5', enabled:true  },
+  { id:2, date:'2026-03-30 11:54:50', no:'399230802474829', name:'回归测试交易商户-LY-1738', orgNo:'26680846', org:'服务有限公司测试修改名称', carrier:'h5', enabled:true  },
+  { id:3, date:'2026-03-30 11:40:10', no:'399230630869737', name:'香蕉说科技',               orgNo:'26680846', org:'服务有限公司测试修改名称', carrier:'mp', enabled:true  },
+  { id:4, date:'2026-02-26 14:32:46', no:'399250929635205', name:'yy-0928连锁分a25',         orgNo:'26680846', org:'服务有限公司测试修改名称', carrier:'h5', enabled:true  },
+  { id:5, date:'2026-01-04 16:33:54', no:'399250929144224', name:'yy-0928连锁总A',           orgNo:'26680846', org:'服务有限公司测试修改名称', carrier:'mp', enabled:true  },
+  { id:6, date:'2025-10-10 16:52:23', no:'399250929260359', name:'yy-0928连锁分a29',         orgNo:'26680846', org:'服务有限公司测试修改名称', carrier:'h5', enabled:true  },
+  { id:7, date:'2025-08-26 10:57:01', no:'399250821398801', name:'yy-250821普通02',          orgNo:'26680846', org:'服务有限公司测试修改名称', carrier:'h5', enabled:true  },
+  { id:8, date:'2025-05-06 15:59:29', no:'399230303123965', name:'dzy-普通商户230303-a',     orgNo:'26680846', org:'服务有限公司测试修改名称', carrier:'h5', enabled:true  },
+];
+
+const CARRIER_LABEL = { h5:'H5 页面', mp:'小程序' };
+
+let editing = null;       // 当前编辑的商户
+
+/* ---------- 渲染 ---------- */
+const tagHTML = v => `<span class="tag tag-${v}"><span class="tag-dot"></span>${CARRIER_LABEL[v]}</span>`;
+
+function render(){
+  const kw = document.getElementById('filterCarrier').value;
+  const list = kw ? rows.filter(r => r.carrier === kw) : rows;
+
+  document.getElementById('tbody').innerHTML = list.map(r => `
+    <tr data-id="${r.id}">
+      <td>${r.id}</td>
+      <td class="cell-nowrap">${r.date}</td>
+      <td class="cell-nowrap">${r.no}</td>
+      <td class="cell-name">${r.name}</td>
+      <td class="cell-nowrap">${r.orgNo}</td>
+      <td class="cell-name">${r.org}</td>
+      <td>${tagHTML(r.carrier)}</td>
+      <td><span class="status"><span class="status-dot ${r.enabled?'':'off'}"></span>${r.enabled?'启用':'停用'}</span></td>
+      <td class="cell-actions">
+        <span class="link" data-act="config" data-id="${r.id}">载体配置</span>
+        <span class="act-sep">|</span>
+        <span class="link" data-act="toggle" data-id="${r.id}">停用</span>
+      </td>
+    </tr>`).join('');
+
+  document.getElementById('totalText').textContent = `共 ${list.length} 条`;
+}
+
+/* ---------- 弹窗 ---------- */
+function openModal(target){
+  editing = target;
+
+  document.getElementById('infoGrid').innerHTML = `
+    <dt>商户名称</dt><dd>${target.name}</dd>
+    <dt>商户编号</dt><dd>${target.no}</dd>
+    <dt>直属机构</dt><dd>${target.org}</dd>`;
+
+  // 回显当前载体；已切到小程序的商户不允许回退 H5
+  document.querySelectorAll('#radioGroup .option').forEach(op => {
+    const v = op.dataset.val;
+    const isCur = v === target.carrier;
+    const locked = v === 'h5' && target.carrier === 'mp';
+
+    op.querySelector('input').checked = isCur;
+    op.querySelector('input').disabled = locked;
+    op.classList.toggle('checked', isCur);
+    op.classList.toggle('disabled', locked);
+    op.querySelector('.opt-tag').style.display = isCur ? '' : 'none';
+  });
+
+  document.getElementById('remark').value = '';
+  document.getElementById('mask').classList.add('show');
+}
+
+function closeModal(){
+  document.getElementById('mask').classList.remove('show');
+  editing = null;
+  document.getElementById('remark').value = '';
+}
+
+function confirmModal(){
+  const picked = document.querySelector('#radioGroup input[name=carrier]:checked');
+  if (!picked){
+    showToast(false, '请先选择收款载体');
+    return;
+  }
+
+  // 备注必填
+  const remark = document.getElementById('remark').value.trim();
+  if (!remark){
+    showToast(false, '请填写切换原因');
+    document.getElementById('remark').focus();
+    return;
+  }
+
+  const val = picked.value;
+  const row = editing;
+  const changed = row.carrier !== val;
+  row.carrier = val;
+
+  render();
+  closeModal();
+
+  showToast(true, changed
+    ? `已将「${row.name}」配置为「${CARRIER_LABEL[val]}」`
+    : '载体未发生变化');
+}
+
+let toastTimer = null;
+function showToast(ok, text){
+  const el = document.getElementById('toast');
+  document.getElementById('toastText').textContent = text || '操作成功';
+  el.style.borderLeftColor = ok ? '#52c41a' : '#ff4d4f';
+  el.querySelector('svg').style.color = ok ? '#52c41a' : '#ff4d4f';
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+/* ---------- 事件 ---------- */
+document.getElementById('tbody').addEventListener('click', e => {
+  const link = e.target.closest('[data-act]');
+  if (!link) return;
+  const id = Number(link.dataset.id);
+  const row = rows.find(r => r.id === id);
+
+  if (link.dataset.act === 'config'){
+    openModal(row);
+  } else if (link.dataset.act === 'toggle'){
+    row.enabled = !row.enabled;
+    render();
+    showToast(true, `已${row.enabled?'启用':'停用'}「${row.name}」`);
+  }
+});
+
+document.querySelectorAll('#radioGroup .option').forEach(op => {
+  op.addEventListener('click', () => {
+    if (op.classList.contains('disabled')) return;   // 单向锁：不可回退 H5
+    document.querySelectorAll('#radioGroup .option').forEach(o => o.classList.remove('checked'));
+    op.classList.add('checked');
+    op.querySelector('input').checked = true;
+  });
+});
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('btnCancel').addEventListener('click', closeModal);
+document.getElementById('btnConfirm').addEventListener('click', confirmModal);
+document.getElementById('mask').addEventListener('click', e => { if (e.target.id === 'mask') closeModal(); });
+document.getElementById('filterCarrier').addEventListener('change', render);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+render();
+</script>
+</body>
+</html>
